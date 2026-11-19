@@ -276,7 +276,7 @@
     clem: { x: zx('aid', 400), active: false, face: -1, anim: 0, hidden: false },
     stan: { x: zx('stanley', 180), active: false, face: -1, anim: 0, hidden: false },
     cap: { title: '', text: '', t: 0 }, parts: [], bubbles: [], fired: {}, plane: null, pop: null, lock: null, endT: 0,
-    covidOver: false, hint: 0, got: {},
+    covidOver: false, hint: 0, got: {}, mini: null,
   };
   if (params.has('x')) { st.katie.x = +params.get('x'); st.mode = 'play'; if (st.katie.x > zx('aid', 380)) st.clem.active = true; if (st.katie.x > zx('stanley', 180)) st.stan.active = true; if (st.katie.x > ref.door + 20) st.covidOver = true; }
 
@@ -299,6 +299,7 @@
   on(x0 + 20, () => say('CHURCHFIELDS SCHOOL', 'First stop: Churchfields, where Katie makes her very first friends.'));
   x0 = zx('study');
   on(x0 + 10, () => say('HOMEWORK TIME', 'Then she studies hard. Really, really hard.'));
+  on(x0 + 150, () => startMini('study'));
   on(x0 + 284, () => { ref.letter.hidden = true; sparkle(x0 + 290, 10, 10); floatText(x0 + 290, 30, "YOU'RE IN!"); sfx('win'); say('HOMEWORK TIME', '...and it pays off. Woodford County High School, here she comes!'); });
   x0 = zx('woodford');
   on(x0 + 60, () => say('WOODFORD COUNTY HIGH SCHOOL', 'Here Katie makes friends for life...'));
@@ -310,6 +311,7 @@
   on(x0 + 10, () => say('BRISTOL', 'Next, off to university in Bristol to study History!'));
   x0 = zx('party');
   on(x0 + 10, () => say('BRISTOL (AFTER DARK)', '...although mainly she just makes friends and goes to parties.'));
+  on(zx('party') + 202, () => startMini('party'));
   x0 = zx('usa');
   on(x0 + 6, () => { st.plane = { t: 0 }; say('TIME TO SEE THE WORLD', 'Backpack on. Next stop: everywhere!'); });
   on(x0 + 110, () => say('USA', 'Across the deserts of America...'));
@@ -324,7 +326,7 @@
   on(x0 + 372, () => { st.clem.active = true; hearts(st.clem.x - 10, 6, 28); bubble(st.clem, "Hi, I'm Clem. I like bikes.", 4, 38); say('KATIE & CLEM', 'This is Clem. He loves cycling. He REALLY loves cycling.'); });
   x0 = zx('stanley');
   on(x0 + 20, () => say('STANLEY', 'Then along comes somebody very small and very important...'));
-  on(x0 + 168, () => { st.stan.active = true; hearts(st.stan.x, 4, 14); bubble(st.stan, 'Woof!', 2.5, 16); sfx('bark'); say('STANLEY', 'Stanley! The best little Yorkshire terrier in the world.'); });
+  on(x0 + 168, () => { st.stan.active = true; hearts(st.stan.x, 4, 14); bubble(st.stan, 'Woof!', 2.5, 16); sfx('bark'); say('STANLEY', 'Stanley! The best little Yorkshire terrier in the world.'); startMini('pet'); });
   x0 = zx('covid');
   on(x0 + 10, () => say('2020', 'And then... COVID HITS!'));
   on(x0 + 70, () => { bubble(st.stan, 'Grrrr!', 2.5, 16); sfx('bark'); });
@@ -342,6 +344,7 @@
   on(x0 + 236, () => bubble(st.clem, 'Water? Banana? Gel?', 3.5, 38));
   on(x0 + 300, () => say('THE MARATHON', 'Keep going, Katie! Nearly there!'));
   on(x0 + 420, () => bubble(st.clem, 'Want a backie?', 3, 38));
+  on(x0 + 440, () => startMini('sprint'));
   on(x0 + 548, () => { floatText(x0 + 548, 34, 'FINISHED!'); confetti(x0 + 548, 40, 80, ['#ff4f79', '#ffd93d', '#5ad6ff', '#8cff7a']); sfx('win'); say('THE MARATHON', 'She smashes it. Medal well and truly earned.'); });
   x0 = zx('baby');
   on(x0 + 20, () => { hearts(st.katie.x, 5, 26); say('A LITTLE SURPRISE', 'And then... some very exciting news. There\'s a baby on the way!'); });
@@ -360,6 +363,43 @@
   function collect(id) {
     const it = itemBy[id]; st.got[id] = st.t; it.obj.hidden = true;
     sparkle(it.x, 8, 12); part({ x: it.x, h: 18, vh: 22, life: 1.2, spr: it.spr }); sfx('coin', 2);
+  }
+  // ------------------------------------------------------------------ button-mashing moments
+  const GRADES = ['E', 'D', 'C', 'B', 'A', 'A*'];
+  const MINI = {
+    study: {
+      label: 'MASH X TO STUDY HARD!', step: 0.055, read: (p) => 'GRADE: ' + GRADES[Math.min(5, Math.floor(p * 6))],
+      press: (m) => { const k = st.katie; part({ x: k.x + 6 + Math.random() * 30, h: 8, vx: (Math.random() - 0.5) * 30, vh: 40 + Math.random() * 30, grav: 90, life: 1, col: ['#2e6fb5', '#c8324b', '#3c8d40', '#ffd93d'][Math.random() * 4 | 0], size: 3, floor: true }); },
+      done: () => { const k = st.katie; floatText(k.x, 34, 'TOP OF THE CLASS!'); sparkle(k.x, 14, 6); sfx('win'); say('HOMEWORK TIME', 'Straight to the top of the class.'); },
+    },
+    party: {
+      label: 'MASH X TO DANCE!', step: 0.05, read: (p) => 'PARTY: ' + Math.round(p * 100) + '%',
+      press: (m) => { const k = st.katie; k.face = -k.face; part({ x: k.x + (Math.random() - 0.5) * 30, h: 24, vx: (Math.random() - 0.5) * 16, vh: 22, life: 1.2, spr: S.note }); },
+      done: () => { const k = st.katie; k.face = 1; confetti(k.x, 50, 120, ['#ff4f79', '#ffd93d', '#5ad6ff', '#8cff7a', '#c77dff']); sfx('win'); say('BRISTOL (AFTER DARK)', 'Dance floor: conquered. (She does also get a History degree.)'); },
+    },
+    pet: {
+      label: 'MASH X TO PAT STANLEY!', step: 0.07, read: (p) => 'TAIL WAGS: ' + Math.round(p * 100) + '%',
+      press: (m) => { part({ x: st.stan.x + (Math.random() - 0.5) * 8, h: 12, vx: (Math.random() - 0.5) * 12, vh: 22, life: 1, spr: S.heart }); },
+      done: () => { hearts(st.stan.x, 6, 14); bubble(st.stan, 'Woof woof!', 2.5, 16); sfx('bark'); },
+    },
+    sprint: {
+      label: 'MASH X TO SPRINT FOR THE LINE!', step: 0.045, read: (p) => 'MILE ' + (22 + p * 4.2).toFixed(1),
+      press: (m) => { st.katie.walk += 9; },
+      done: () => { st.katie.x = zx('marathon', 549); },
+    },
+    ido: {
+      label: "PRESS X TO SAY 'I DO!'", step: 1, auto: 0, read: () => '',
+      press: () => { }, done: () => beginEnd(),
+    },
+  };
+  function startMini(id) { st.mode = 'mini'; st.mini = { id, p: 0, t: 0, kick: 0, x0: st.katie.x }; st.katie.moving = false; sfx('pop'); }
+  function miniPress() {
+    const m = st.mini, d = MINI[m.id]; if (!m || m.p >= 1) return;
+    m.p = Math.min(1, m.p + d.step); m.kick = 1; d.press(m); sfx('coin', Math.floor(m.p * 5));
+  }
+  function beginEnd() {
+    const k = st.katie;
+    st.mode = 'end'; st.endT = 0; k.moving = false; k.face = 1; st.cap.text = ''; st.cap.title = ''; hearts(k.x + 12, 10, 30); sfx('bell');
   }
   function startLock() {
     st.mode = 'lock'; st.lock = { t: 0, step: 0 };
@@ -446,6 +486,7 @@
     keys[e.key.length === 1 ? e.key.toLowerCase() : e.key] = true;
     audioStart();
     if (st.mode === 'title' && ['ArrowRight', 'd', 'Enter', ' '].includes(e.key.length === 1 ? e.key.toLowerCase() : e.key)) { st.mode = 'play'; st.hint = 0; }
+    if (st.mode === 'mini' && !e.repeat && (e.key.toLowerCase() === 'x' || e.key === ' ')) miniPress();
     if (e.key.toLowerCase() === 'm') { AU.muted = !AU.muted; if (AU.master) AU.master.gain.value = AU.muted ? 0 : 1; }
     if (e.key.toLowerCase() === 'r' && st.mode === 'end' && st.endT > 4) location.reload();
   });
@@ -487,7 +528,13 @@
       const f = formAt(k.x);
       if (f !== k.form) { k.form = f; sparkle(k.x, 12, 2); sfx('coin', 1); }
       for (const t of trig) if (!t.done && k.x >= t.x) { t.done = true; t.fn(); }
-      if (k.x >= END_X) { st.mode = 'end'; st.endT = 0; k.moving = false; k.face = 1; st.cap.text = ''; st.cap.title = ''; hearts(k.x + 12, 10, 30); sfx('bell'); }
+      if (k.x >= END_X && st.mode === 'play') startMini('ido');
+    } else if (st.mode === 'mini') {
+      const m = st.mini, d = MINI[m.id];
+      m.t += dt; m.kick = Math.max(0, m.kick - dt * 5);
+      m.p = Math.min(1, m.p + dt * (d.auto === undefined ? 0.03 : d.auto));
+      if (m.id === 'sprint') { const tx = m.x0 + m.p * (zx('marathon', 546) - m.x0); k.moving = tx > k.x + 0.2; k.x = Math.max(k.x, tx); }
+      if (m.p >= 1) { st.mode = 'play'; st.mini = null; k.moving = false; d.done(); }
     } else if (st.mode === 'lock') {
       const L = st.lock; L.t += dt;
       if (L.step === 0 && L.t > 3.6) { L.step = 1; say("LOCKDOWN AT GRANNY'S", 'Days go by. Then weeks. Then months...'); }
@@ -495,7 +542,7 @@
       if (L.t > 10.5) endLock();
     } else if (st.mode === 'end') {
       st.endT += dt;
-      if (st.endT > 0.6 && !st.e1) { st.e1 = true; bubble(k, 'I do!', 1.9, 30); }
+      if (st.endT > 0.05 && !st.e1) { st.e1 = true; bubble(k, 'I do!', 2, 30); }
       if (st.endT > 1.3 && !st.e2) { st.e2 = true; bubble(st.clem, 'Ding ding!', 1.9, 40); sfx('coin', 3); }
       if (Math.random() < dt * 3) hearts(k.x + 12 + (Math.random() - 0.5) * 30, 1, 30);
       if (Math.random() < dt * 14) confetti(k.x + 10, 2, 300, ['#ff8fb3', '#ffffff', '#ffd93d', '#ffc2d1', '#b28dff']);
@@ -664,13 +711,14 @@
     if (!s.hidden) {
       const set = k.x >= zx('wedpath') ? StanS.bow : StanS.normal;
       const fs = s.face > 0 ? set.r : set.l;
-      drawW(fs[(s.anim / 5 | 0) % 2], s.x, s.active ? 0 : 4);
+      drawW(fs[(s.anim / 5 | 0) % 2], s.x, (s.active ? 0 : 4) + (st.mini && st.mini.id === 'pet' ? Math.round(st.mini.kick * 3) : 0));
     }
     if (!k.hidden) {
       const set = Katie[k.form], fs = k.face > 0 ? set.r : set.l;
       let f = 0, lift = 0;
       if (k.form === 'bike') f = (k.walk / 7 | 0) % 2;
       else if (k.moving) { f = (k.walk / (k.form === 'run' ? 9 : 6) | 0) % 2 + 1; lift = f === 2 ? 1 : 0; }
+      if (st.mini && (st.mini.id === 'party' || st.mini.id === 'study')) lift += Math.round(st.mini.kick * (st.mini.id === 'party' ? 6 : 2));
       drawW(fs[f], k.x, lift);
     }
     drawObjs(2);
@@ -712,6 +760,17 @@
       box(x, y, 11, 11, 'rgba(10,10,30,.45)', 'rgba(255,255,255,.35)');
       if (g0 !== undefined) { const pop = Math.max(0, 1 - (st.t - g0) * 3); ctx.drawImage(it.spr, x + 1, y + 1 - Math.round(pop * 4)); }
     });
+    if (st.mode === 'mini') {
+      const m = st.mini, d = MINI[m.id], bw = 190, bx = Math.round(CX - bw / 2) + 14, by = 176;
+      box(bx, by, bw, 32, 'rgba(22,24,48,.92)', '#ffd23f');
+      textC(d.label, bx + bw / 2, by + 5, Math.sin(t * 9) > 0 ? '#ffffff' : '#ffd23f');
+      if (m.id !== 'ido') {
+        box(bx + 8, by + 17, bw - 16, 9, '#0d0e1c', '#f4f1e8');
+        const fw = Math.round((bw - 20) * m.p); fr(bx + 10, by + 19, fw, 5, m.p > 0.8 ? '#8cff7a' : m.p > 0.4 ? '#ffd23f' : '#ff8f5a'); fr(bx + 10, by + 19, fw, 1, 'rgba(255,255,255,.5)');
+        const rd = d.read(m.p), rw = textWidth(rd, 2), ry = 92 - Math.round(m.kick * 3);
+        drawText(ctx, rd, Math.round(CX - rw / 2) + 2, ry + 2, 'rgba(0,0,0,.5)', 2); drawText(ctx, rd, Math.round(CX - rw / 2), ry, '#ffffff', 2);
+      } else textC('(or Space)', bx + bw / 2, by + 18, '#d6dcff');
+    }
     if (st.mode === 'title') drawTitle();
     if (st.mode === 'end') drawEnd();
   }
@@ -742,7 +801,7 @@
     ctx.drawImage(S.heart, CX - 3, 70 + Math.round(Math.sin(t * 3) * 2));
     textC('The story so far', CX, 84, '#ffe9a6');
     if (Math.sin(t * 4) > -0.3) { const s2 = 'PRESS > TO START'; textS(s2, Math.round(CX - textWidth(s2) / 2), 104, '#ffffff'); }
-    textS('Hold > (or D) to walk.  M: music on/off', Math.round(CX - textWidth('Hold > (or D) to walk.  M: music on/off') / 2), 202, '#d6dcff');
+    { const h1 = 'Hold > to walk.  Mash X when asked.  M: music'; textS(h1, Math.round(CX - textWidth(h1) / 2), 202, '#d6dcff'); }
   }
   function drawEnd() {
     const e = st.endT;
