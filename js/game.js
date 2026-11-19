@@ -322,7 +322,7 @@
   on(x0 + 4, () => { st.plane = { t: 0 }; say('MALLORCA', 'Katie goes on a big cycling trip in Mallorca with her dad and her brother.'); });
   on(x0 + 270, () => { st.pop = { t: 0 }; sfx('pop'); });
   x0 = zx('marathon');
-  on(x0 + 6, () => { st.plane = { t: 0 }; say('THE MARATHON', 'Back in York, Katie runs a marathon. A whole one! 26.2 miles!'); });
+  on(x0 + 6, () => { st.plane = { t: 0 }; say('THE MARATHON', 'Next challenge: Katie runs a marathon. A whole one! 26.2 miles!'); });
   on(x0 + 300, () => say('THE MARATHON', 'Keep going, Katie! Nearly there!'));
   on(x0 + 548, () => { floatText(x0 + 548, 34, 'FINISHED!'); part({ x: x0 + 548, h: 24, vh: 10, life: 2, spr: S.medal }); confetti(x0 + 548, 40, 80, ['#ff4f79', '#ffd93d', '#5ad6ff', '#8cff7a']); sfx('win'); say('THE MARATHON', 'She smashes it. Medal well and truly earned.'); });
   x0 = zx('baby');
