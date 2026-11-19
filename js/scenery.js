@@ -128,7 +128,7 @@ function buildScenery() {
   S.examdesk = mk(16, 13, (r) => { r(0, 5, 16, 2, '#b98a55'); r(1, 7, 2, 6, '#6b4a2f'); r(13, 7, 2, 6, '#6b4a2f'); r(4, 3, 7, 2, '#ffffff'); r(5, 4, 5, 1, '#c3c8d0'); r(12, 2, 1, 3, '#2e6fb5'); });
   S.flowershop = mk(64, 54, (r, g) => {
     r(2, 4, 60, 50, '#f7d9c4'); r(0, 2, 64, 3, '#8a6238'); r(2, 5, 60, 1, shade('#f7d9c4', -0.12));
-    r(8, 7, 48, 11, '#2d7d5a'); drawText(g, 'FLOWERS', 32 - (textWidth('FLOWERS') >> 1), 9, CREAM);
+    r(6, 7, 52, 11, '#2d7d5a'); drawText(g, 'NEEDHAMS', 32 - (textWidth('NEEDHAMS') >> 1), 9, CREAM);
     for (let i = 0; i < 12; i++) r(2 + i * 5, 20, 5, 6, i % 2 ? '#ffffff' : '#ef7fb0');
     for (let i = 0; i < 12; i++) r(2 + i * 5 + 1, 26, 3, 1, i % 2 ? '#ffffff' : '#ef7fb0');
     r(5, 29, 32, 17, CREAM); r(6, 30, 30, 15, '#bfe3f2');

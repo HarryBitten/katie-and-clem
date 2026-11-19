@@ -129,6 +129,19 @@
     baby: sign('BABY ON BOARD', { bg: '#ffd23f' }), wed: sign('KATIE ~ CLEM', { bg: '#ffd9e4', fg: '#c8324b', edge: '#c8324b' }),
   };
 
+  // ------------------------------------------------------------------ keepsakes
+  const stamp = (col, fn) => mk(9, 9, (r) => { r(0, 0, 9, 9, '#ffffff'); r(1, 1, 7, 7, col); for (let i = 0; i < 9; i += 2) { r(i, 0, 1, 1, col); r(i, 8, 1, 1, col); r(0, i, 1, 1, col); r(8, i, 1, 1, col); } fn(r); });
+  const ITEMS = [
+    { id: 'flower', spr: mk(9, 9, (r) => { r(4, 4, 1, 5, '#3c8d40'); r(5, 6, 2, 1, '#3c8d40'); r(3, 0, 3, 5, '#ff6b9d'); r(2, 1, 5, 3, '#ff6b9d'); r(4, 2, 1, 1, '#ffd93d'); }) },
+    { id: 'usa', spr: stamp('#2e4a9a', (r) => { r(4, 2, 1, 5, '#ffffff'); r(2, 4, 5, 1, '#ffffff'); r(3, 3, 3, 3, '#ffffff'); }) },
+    { id: 'sa', spr: stamp('#2d9a4f', (r) => { r(4, 2, 1, 1, '#ffffff'); r(3, 3, 3, 1, '#ffffff'); r(2, 4, 5, 3, '#ffffff'); r(3, 5, 1, 1, '#2d9a4f'); }) },
+    { id: 'sea', spr: stamp('#e8607a', (r) => { r(4, 1, 1, 1, '#ffffff'); r(3, 2, 3, 1, '#ffffff'); r(2, 4, 5, 1, '#ffffff'); r(3, 3, 3, 1, '#ffffff'); r(3, 5, 3, 2, '#ffffff'); }) },
+    { id: 'india', spr: stamp('#ff9f1c', (r) => { r(4, 1, 1, 1, '#ffffff'); r(3, 2, 3, 2, '#ffffff'); r(2, 4, 5, 3, '#ffffff'); r(1, 3, 1, 4, '#ffffff'); r(7, 3, 1, 4, '#ffffff'); r(4, 5, 1, 2, '#ff9f1c'); }) },
+    { id: 'key', spr: mk(9, 9, (r) => { r(0, 2, 4, 5, '#ffd23f'); r(1, 3, 2, 3, '#b8860b'); r(4, 4, 5, 1, '#ffd23f'); r(6, 5, 1, 2, '#ffd23f'); r(8, 5, 1, 2, '#ffd23f'); }) },
+    { id: 'medal', spr: mk(9, 9, (r) => { r(2, 0, 2, 4, '#2e6fb5'); r(5, 0, 2, 4, '#c8324b'); disc(r, 4, 6, 2, '#ffd23f'); r(4, 6, 1, 1, '#fff7b0'); }) },
+  ];
+  const itemBy = {}; ITEMS.forEach(it => { itemBy[it.id] = it; });
+
   // ------------------------------------------------------------------ world
   const objs = [], npcs = [];
   function add(spr, x, layer, o) {
@@ -251,6 +264,8 @@
     guests.forEach((g, i) => { add(S.pew, x + 36 + i * 22 - 5, 1); npc(g, x + 36 + i * 22, { mode: 'guest', face: 1 }); });
     add(S.stand, x + 14, 1); add(S.stand, x + 232, 1);
   })();
+  ITEMS.forEach(it => { it.x = { flower: zx('flower', 206), usa: zx('usa', 300), sa: zx('sa', 310), sea: zx('sea', 296), india: zx('india', 476), key: zx('york', 426), medal: zx('marathon', 548) }[it.id]; it.obj = add(it.spr, it.x, 1, { lift: 16, bob: 1.5 }); });
+  ref.ball = add(S.ball, zx('york', 505), 1);
   objs.sort((a, b) => a.layer - b.layer);
 
   // ------------------------------------------------------------------ state
@@ -261,7 +276,7 @@
     clem: { x: zx('aid', 400), active: false, face: -1, anim: 0, hidden: false },
     stan: { x: zx('stanley', 180), active: false, face: -1, anim: 0, hidden: false },
     cap: { title: '', text: '', t: 0 }, parts: [], bubbles: [], fired: {}, plane: null, pop: null, lock: null, endT: 0,
-    covidOver: false, hint: 0,
+    covidOver: false, hint: 0, got: {},
   };
   if (params.has('x')) { st.katie.x = +params.get('x'); st.mode = 'play'; if (st.katie.x > zx('aid', 380)) st.clem.active = true; if (st.katie.x > zx('stanley', 180)) st.stan.active = true; if (st.katie.x > ref.door + 20) st.covidOver = true; }
 
@@ -290,7 +305,7 @@
   on(x0 + 350, () => say('WOODFORD COUNTY HIGH SCHOOL', '...and aces every single one of her exams. Obviously.'));
   [390, 440, 490].forEach((d, i) => on(zx('woodford') + d, () => { floatText(zx('woodford') + d, 26, 'A*'); sparkle(zx('woodford') + d, 5, 12); sfx('coin', i); }));
   x0 = zx('flower');
-  on(x0 + 30, () => say('THE FLOWER SHOP', 'A brief but beautifully scented career in a flower shop.'));
+  on(x0 + 30, () => say('NEEDHAMS', 'A brief but beautifully scented career at Needhams, the flower shop.'));
   x0 = zx('bristol');
   on(x0 + 10, () => say('BRISTOL', 'Next, off to university in Bristol to study History!'));
   x0 = zx('party');
@@ -312,6 +327,7 @@
   on(x0 + 168, () => { st.stan.active = true; hearts(st.stan.x, 4, 14); bubble(st.stan, 'Woof!', 2.5, 16); sfx('bark'); say('STANLEY', 'Stanley! The best little Yorkshire terrier in the world.'); });
   x0 = zx('covid');
   on(x0 + 10, () => say('2020', 'And then... COVID HITS!'));
+  on(x0 + 70, () => { bubble(st.stan, 'Grrrr!', 2.5, 16); sfx('bark'); });
   on(x0 + 170, () => say('2020', 'Everybody stays indoors. Katie heads to Granny\'s in London.'));
   on(ref.door - 8, () => { if (!st.covidOver) startLock(); });
   on(zx('after') + 40, () => say('FREEDOM!', 'Time for a fresh start. Katie and Clem head north...'));
@@ -320,20 +336,31 @@
   on(ref.saleX + 6, () => { ref.sale.spr = SIGN.sold; sparkle(ref.saleX, 12, 10); hearts(ref.saleX + 50, 5, 40); sfx('win'); say('HOME SWEET HOME', 'Sold! To Katie, Clem and Stanley.'); });
   x0 = zx('mallorca');
   on(x0 + 4, () => { st.plane = { t: 0 }; say('MALLORCA', 'Katie goes on a big cycling trip in Mallorca with her dad and her brother.'); });
-  on(x0 + 270, () => { st.pop = { t: 0 }; sfx('pop'); });
+  on(x0 + 90, () => { st.pop = { t: 0 }; sfx('pop'); });
   x0 = zx('marathon');
   on(x0 + 6, () => { st.plane = { t: 0 }; say('THE MARATHON', 'Next challenge: Katie runs a marathon. A whole one! 26.2 miles!'); });
+  on(x0 + 236, () => bubble(st.clem, 'Water? Banana? Gel?', 3.5, 38));
   on(x0 + 300, () => say('THE MARATHON', 'Keep going, Katie! Nearly there!'));
-  on(x0 + 548, () => { floatText(x0 + 548, 34, 'FINISHED!'); part({ x: x0 + 548, h: 24, vh: 10, life: 2, spr: S.medal }); confetti(x0 + 548, 40, 80, ['#ff4f79', '#ffd93d', '#5ad6ff', '#8cff7a']); sfx('win'); say('THE MARATHON', 'She smashes it. Medal well and truly earned.'); });
+  on(x0 + 420, () => bubble(st.clem, 'Want a backie?', 3, 38));
+  on(x0 + 548, () => { floatText(x0 + 548, 34, 'FINISHED!'); confetti(x0 + 548, 40, 80, ['#ff4f79', '#ffd93d', '#5ad6ff', '#8cff7a']); sfx('win'); say('THE MARATHON', 'She smashes it. Medal well and truly earned.'); });
   x0 = zx('baby');
   on(x0 + 20, () => { hearts(st.katie.x, 5, 26); say('A LITTLE SURPRISE', 'And then... some very exciting news. There\'s a baby on the way!'); });
   x0 = zx('wedpath');
   on(x0 + 10, () => { say('THE BIG DAY', 'Which brings us to the big day itself.'); bubble(st.clem, 'See you at the altar!', 3, 38); });
   on(zx('aisle') - 20, () => { say('THE BIG DAY', 'Here comes the bride...'); });
+  on(zx('aisle') + 60, () => { bubble(st.stan, 'I have the rings!', 3.5, 16); sfx('bark'); });
+  on(zx('york') + 452, () => { st.stan.dashT = 3; bubble(st.stan, 'BALL!', 2, 16); });
   trig.sort((a, b) => a.x - b.x);
   // when jumping in with ?x=, mark earlier triggers as done
   if (params.has('x')) { trig.forEach(t => { if (t.x < st.katie.x - 2) t.done = true; }); if (st.katie.x > ref.saleX + 6) ref.sale.spr = SIGN.sold; }
 
+  ITEMS.forEach(it => on(it.x - 4, () => collect(it.id)));
+  trig.sort((a, b) => a.x - b.x);
+  if (params.has('x')) { trig.forEach(t => { if (t.x < st.katie.x - 2) t.done = true; }); ITEMS.forEach(it => { if (it.x - 4 < st.katie.x - 2) { st.got[it.id] = -9; it.obj.hidden = true; } }); }
+  function collect(id) {
+    const it = itemBy[id]; st.got[id] = st.t; it.obj.hidden = true;
+    sparkle(it.x, 8, 12); part({ x: it.x, h: 18, vh: 22, life: 1.2, spr: it.spr }); sfx('coin', 2);
+  }
   function startLock() {
     st.mode = 'lock'; st.lock = { t: 0, step: 0 };
     st.katie.hidden = true; st.stan.hidden = true; ref.granny.hidden = true; ref.gran.spr = S.grannyIn;
@@ -464,10 +491,12 @@
     } else if (st.mode === 'lock') {
       const L = st.lock; L.t += dt;
       if (L.step === 0 && L.t > 3.6) { L.step = 1; say("LOCKDOWN AT GRANNY'S", 'Days go by. Then weeks. Then months...'); }
-      if (L.step === 1 && L.t > 6.8) { L.step = 2; say("LOCKDOWN AT GRANNY'S", 'Meanwhile, Clem goes out for his one bike ride of the day. Again.'); }
+      if (L.step === 1 && L.t > 6.8) { L.step = 2; bubble(st.clem, 'Lap 400!', 3, 38); say("LOCKDOWN AT GRANNY'S", 'Meanwhile, Clem goes out for his one bike ride of the day. Again.'); }
       if (L.t > 10.5) endLock();
     } else if (st.mode === 'end') {
       st.endT += dt;
+      if (st.endT > 0.6 && !st.e1) { st.e1 = true; bubble(k, 'I do!', 1.9, 30); }
+      if (st.endT > 1.3 && !st.e2) { st.e2 = true; bubble(st.clem, 'Ding ding!', 1.9, 40); sfx('coin', 3); }
       if (Math.random() < dt * 3) hearts(k.x + 12 + (Math.random() - 0.5) * 30, 1, 30);
       if (Math.random() < dt * 14) confetti(k.x + 10, 2, 300, ['#ff8fb3', '#ffffff', '#ffd93d', '#ffc2d1', '#b28dff']);
     }
@@ -495,6 +524,7 @@
       if (k.x >= zx('mallorca') && k.x < zx('mallorca') + 200) target = Math.min(k.x - 14, zx('mallorca') - 14);
       else if (k.x >= zx('mallorca') + 200 && k.x < zx('marathon') + 60) target = zx('marathon') + 50;
       else target = k.x - 15;
+      if (s.dashT > 0) { s.dashT -= dt; if (!ref.ball.hidden) { target = ref.ball.x; if (Math.abs(s.x - ref.ball.x) < 3) { ref.ball.hidden = true; sparkle(ref.ball.x, 6, 4); bubble(s, 'Woof!', 2, 16); sfx('bark'); } } }
       follow(s, target, dt, 170);
       if (Math.abs(target - s.x) < 2) s.face = target > k.x ? -1 : 1;
     }
@@ -517,7 +547,7 @@
     for (const b of st.bubbles) b.t += dt;
     st.bubbles = st.bubbles.filter(b => b.t < b.dur);
     if (st.plane) { st.plane.t += dt; if (st.plane.t > 5) st.plane = null; }
-    if (st.pop) { st.pop.t += dt; if (st.pop.t > 6.5) st.pop = null; }
+    if (st.pop) { st.pop.t += dt; if (st.pop.t > 4.6) st.pop = null; }
     if (st.covidOver) for (const v of ref.virus) { v.lift += dt * 60; if (v.lift > 300) v.hidden = true; }
   }
   const tumble = mk(9, 9, (r) => { ring(r, 4, 4, 4, '#a87a4a'); ring(r, 4, 4, 2, '#8a6238'); pline(r, 1, 1, 7, 7, '#8a6238'); pline(r, 7, 1, 1, 7, '#a87a4a'); });
@@ -659,9 +689,9 @@
     if (st.mode === 'lock') { const q = scr(ref.door, 70); const day = 'DAY ' + (1 + Math.floor(st.lock.t * st.lock.t * 3.3)); drawBubble(day, q, 1, 99); }
     // Clem pops up
     if (st.pop) {
-      const pt = st.pop.t, e = Math.min(1, pt * 3) * Math.min(1, (6.5 - pt) * 3), px = W + 44 - e * 96, py = 118;
+      const pt = st.pop.t, e = Math.min(1, pt * 3) * Math.min(1, (4.6 - pt) * 3), px = W + 44 - e * 96, py = 118;
       ctx.save(); ctx.translate(px, py); ctx.rotate(-0.12); ctx.scale(3, 3); ctx.drawImage(ClemS.normal.l[(pt * 4 | 0) % 2], -16, -17); ctx.restore();
-      if (pt > 0.5 && pt < 6.2) {
+      if (pt > 0.5 && pt < 4.3) {
         const l1 = 'What about me?', l2 = "That's like my whole thing!", bw = textWidth(l2) + 12, bx = Math.round(px - 62 - bw), by = 66;
         box(bx, by, bw, 26, '#ffffff', '#2b2b33'); fr(bx + bw, by + 12, 3, 3, '#2b2b33'); fr(bx + bw - 1, by + 11, 2, 5, '#ffffff'); fr(bx + bw + 1, by + 13, 2, 1, '#ffffff');
         drawText(ctx, l1, bx + 6, by + 4, '#2b2b33'); drawText(ctx, l2, bx + 6, by + 14, '#2b2b33');
@@ -677,6 +707,11 @@
       lines.forEach((ln, i) => { const s2 = ln.slice(0, Math.max(0, n)); n -= ln.length + 1; if (s2) drawText(ctx, s2, 13, 21 + i * 10, '#ffffff'); });
     }
     if (st.mode === 'play' && st.hint < 2.5 && st.katie.x < 300 && Math.sin(t * 5) > -0.4) textS('HOLD > OR D TO WALK', 136, 200, '#ffffff');
+    if (st.mode !== 'title') ITEMS.forEach((it, i) => {
+      const x = 6 + i * 13, y = H - 16, g0 = st.got[it.id];
+      box(x, y, 11, 11, 'rgba(10,10,30,.45)', 'rgba(255,255,255,.35)');
+      if (g0 !== undefined) { const pop = Math.max(0, 1 - (st.t - g0) * 3); ctx.drawImage(it.spr, x + 1, y + 1 - Math.round(pop * 4)); }
+    });
     if (st.mode === 'title') drawTitle();
     if (st.mode === 'end') drawEnd();
   }
