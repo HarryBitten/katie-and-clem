@@ -80,7 +80,7 @@
     normal: rset({ hair: '#4a3423', helmet: '#2e6fb5', top: '#ffd23f', bike: '#d63b3b' }),
     groom: rset({ hair: '#4a3423', hat: true, bowtie: '#c8324b', top: '#3a3a44', bottom: '#3a3a44', shoes: '#23232b', bike: '#d63b3b' }),
   };
-  const StanS = { normal: (() => { const f = yorkie(false); return { r: f, l: f.map(flipX) }; })(), bow: (() => { const f = yorkie(true); return { r: f, l: f.map(flipX) }; })() };
+  const StanS = { normal: (() => { const f = terrier(false); return { r: f, l: f.map(flipX) }; })(), bow: (() => { const f = terrier(true); return { r: f, l: f.map(flipX) }; })() };
   const P = {
     dad: pset({ style: 'bald', top: '#3c6e9a', bottom: '#4a4a55' }),
     mum: pset({ hair: '#5a3520', style: 'bob', top: '#8e5bb5', bottom: '#3a3a55', blush: true }),
@@ -329,7 +329,7 @@
   on(x0 + 372, () => { st.clem.active = true; hearts(st.clem.x - 10, 6, 28); bubble(st.clem, "Hi, I'm Clem. I like bikes.", 4, 38); say('KATIE & CLEM', 'This is Clem. He loves cycling. He REALLY loves cycling.'); });
   x0 = zx('stanley');
   on(x0 + 20, () => say('STANLEY', 'Then along comes somebody very small and very important...'));
-  on(x0 + 168, () => { st.stan.active = true; hearts(st.stan.x, 4, 14); bubble(st.stan, 'Woof!', 2.5, 16); sfx('bark'); say('STANLEY', 'Stanley! The best little Yorkshire terrier in the world.'); startMini('pet'); });
+  on(x0 + 168, () => { st.stan.active = true; hearts(st.stan.x, 4, 14); bubble(st.stan, 'Woof!', 2.5, 16); sfx('bark'); say('STANLEY', 'Stanley! The best little border terrier in the world.'); startMini('pet'); });
   x0 = zx('covid');
   on(x0 + 10, () => say('2020', 'And then... COVID HITS!'));
   on(x0 + 70, () => { bubble(st.stan, 'Grrrr!', 2.5, 16); sfx('bark'); });
@@ -879,7 +879,7 @@
   // ------------------------------------------------------------------ loop
   let last = performance.now();
   function frame(now) {
-    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    const dt = Math.max(0, Math.min(0.05, (now - last) / 1000)); last = now;
     update(dt); render();
     requestAnimationFrame(frame);
   }

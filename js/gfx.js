@@ -142,19 +142,20 @@ function rider(o) {
   return frames;
 }
 
-// Stanley the Yorkshire terrier. 2 frames.
-function yorkie(bow) {
-  const tan = '#cf8f45', tanD = '#a86d2c', coat = '#56657a', coatD = '#3f4c5e';
+// Stanley the border terrier. 2 frames.
+function terrier(bow) {
+  const tan = '#c0895a', tanL = '#d6a577', griz = '#8f6844', dark = '#4a3728';
   const frames = [];
-  for (let f = 0; f < 2; f++) frames.push(mk(14, 10, (r) => {
-    r(2, 4, 8, 3, coat); r(2, 6, 8, 1, coatD); r(3, 3, 6, 1, coat);
-    r(1, 1, 1, 3, tan); r(0, 1, 1, 1, tanD);                         // tail
-    r(8, 1, 5, 4, tan); r(8, 0, 1, 1, tanD); r(11, 0, 1, 1, tanD);   // head + ears
-    r(9, 1, 2, 1, '#e3ab63');                                        // fringe
-    r(11, 2, 1, 1, '#1d1d22'); r(13, 3, 1, 1, '#1d1d22'); r(12, 3, 1, 2, tan); r(9, 5, 2, 2, tan);
-    if (f === 0) { r(2, 7, 1, 3, tan); r(4, 7, 1, 2, tanD); r(8, 7, 1, 2, tanD); r(10, 7, 1, 3, tan); }
-    else { r(3, 7, 1, 3, tan); r(5, 7, 1, 2, tanD); r(7, 7, 1, 2, tanD); r(9, 7, 1, 3, tan); }
-    if (bow) { r(8, 5, 3, 1, '#c8324b'); }
+  for (let f = 0; f < 2; f++) frames.push(mk(16, 11, (r) => {
+    r(2, 4, 9, 4, tan); r(3, 4, 6, 2, griz); r(2, 7, 9, 1, tanL);          // wiry body with a grizzled saddle
+    r(1, 2, 1, 3, tan); r(1, 2, 1, 1, griz);                              // short upright tail
+    r(9, 1, 5, 5, tan); r(10, 5, 3, 2, tanL);                             // broad "otter" head and chest
+    r(9, 1, 2, 3, dark); r(9, 0, 2, 1, dark);                             // small dark folded ears
+    r(13, 3, 2, 3, dark); r(15, 3, 1, 1, '#1d1d22'); r(13, 6, 1, 1, tanL); // dark muzzle, nose, whiskers
+    r(12, 2, 1, 1, '#1d1d22');
+    if (f === 0) { r(2, 8, 1, 3, tan); r(4, 8, 1, 2, griz); r(8, 8, 1, 2, griz); r(10, 8, 1, 3, tan); }
+    else { r(3, 8, 1, 3, tan); r(5, 8, 1, 2, griz); r(7, 8, 1, 2, griz); r(9, 8, 1, 3, tan); }
+    if (bow) r(9, 6, 3, 1, '#c8324b');
   }));
   return frames;
 }
