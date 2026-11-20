@@ -140,6 +140,9 @@
     { id: 'key', spr: mk(9, 9, (r) => { r(0, 2, 4, 5, '#ffd23f'); r(1, 3, 2, 3, '#b8860b'); r(4, 4, 5, 1, '#ffd23f'); r(6, 5, 1, 2, '#ffd23f'); r(8, 5, 1, 2, '#ffd23f'); }) },
     { id: 'medal', spr: mk(9, 9, (r) => { r(2, 0, 2, 4, '#2e6fb5'); r(5, 0, 2, 4, '#c8324b'); disc(r, 4, 6, 2, '#ffd23f'); r(4, 6, 1, 1, '#fff7b0'); }) },
   ];
+  const BOX = mk(11, 9, (r) => { r(0, 0, 11, 9, '#c79a63'); r(0, 0, 11, 1, '#a87a4a'); r(0, 8, 11, 1, '#a87a4a'); r(0, 0, 1, 9, '#a87a4a'); r(10, 0, 1, 9, '#a87a4a'); r(4, 0, 3, 9, '#e3c79a'); });
+  const VAN = mk(46, 26, (r, g) => { r(0, 2, 32, 19, '#f4f1e8'); r(0, 2, 32, 1, '#d6dae0'); r(32, 8, 12, 13, '#2e6fb5'); r(34, 10, 7, 5, '#bfe3f2'); r(0, 19, 44, 2, '#c3c8d0'); disc(r, 9, 22, 3, '#23232b'); disc(r, 35, 22, 3, '#23232b'); r(9, 22, 1, 1, '#aaa'); r(35, 22, 1, 1, '#aaa'); drawText(g, 'MOVE', 4, 7, '#2e6fb5'); });
+  const PHOTO = mk(11, 12, (r) => { r(0, 0, 11, 12, '#ffffff'); r(1, 1, 9, 7, '#5aa9d6'); r(1, 5, 9, 3, '#6fc27a'); r(6, 2, 2, 2, '#ffe066'); });
   const itemBy = {}; ITEMS.forEach(it => { itemBy[it.id] = it; });
 
   // ------------------------------------------------------------------ world
@@ -234,8 +237,8 @@
 
     x = zx('york');
     add(S.bar, x + 90); add(S.minster, x + 240, 0, { sink: 4 }); ref.yhome = add(S.yorkHome, x + 430); add(S.tree, x + 520);
-    add(SIGN.york, x + 34, 1); ref.sale = add(SIGN.sale, x + 380, 1); add(S.lamp, x + 480, 1); add(S.bush, x + 560, 1);
-    ref.saleX = x + 380;
+    add(SIGN.york, x + 34, 1); ref.sale = add(SIGN.sale, x + 330, 1); add(VAN, x + 366, 0, { sink: 0 }); ref.boxes = [352, 372, 392].map(d => add(BOX, x + d, 1)); add(S.lamp, x + 480, 1); add(S.bush, x + 560, 1);
+    ref.saleX = x + 330;
 
     x = zx('mallorca');
     add(S.palm, x + 120); add(S.windmill, x + 210, 0, { rate: 5 }); add(S.orange, x + 290); add(S.palm, x + 350); add(S.orange, x + 410); add(S.windmill, x + 500, 0, { rate: 5 });
@@ -264,7 +267,7 @@
     guests.forEach((g, i) => { add(S.pew, x + 36 + i * 22 - 5, 1); npc(g, x + 36 + i * 22, { mode: 'guest', face: 1 }); });
     add(S.stand, x + 14, 1); add(S.stand, x + 232, 1);
   })();
-  ITEMS.forEach(it => { it.x = { flower: zx('flower', 206), usa: zx('usa', 300), sa: zx('sa', 310), sea: zx('sea', 296), india: zx('india', 476), key: zx('york', 426), medal: zx('marathon', 548) }[it.id]; it.obj = add(it.spr, it.x, 1, { lift: 16, bob: 1.5 }); });
+  ITEMS.forEach(it => { it.x = { flower: zx('flower', 240), usa: zx('usa', 300), sa: zx('sa', 310), sea: zx('sea', 296), india: zx('india', 476), key: zx('york', 340), medal: zx('marathon', 548) }[it.id]; it.obj = add(it.spr, it.x, 1, { lift: 16, bob: 1.5 }); }); itemBy.flower.obj.hidden = true;
   ref.ball = add(S.ball, zx('york', 505), 1);
   objs.sort((a, b) => a.layer - b.layer);
 
@@ -276,7 +279,7 @@
     clem: { x: zx('aid', 400), active: false, face: -1, anim: 0, hidden: false },
     stan: { x: zx('stanley', 180), active: false, face: -1, anim: 0, hidden: false },
     cap: { title: '', text: '', t: 0 }, parts: [], bubbles: [], fired: {}, plane: null, pop: null, lock: null, endT: 0,
-    covidOver: false, hint: 0, got: {}, mini: null,
+    covidOver: false, hint: 0, got: {}, mini: null, carry: 0, picked: 0, flash: 0, snaps: 0,
   };
   if (params.has('x')) { st.katie.x = +params.get('x'); st.mode = 'play'; if (st.katie.x > zx('aid', 380)) st.clem.active = true; if (st.katie.x > zx('stanley', 180)) st.stan.active = true; if (st.katie.x > ref.door + 20) st.covidOver = true; }
 
@@ -304,7 +307,7 @@
   x0 = zx('woodford');
   on(x0 + 60, () => say('WOODFORD COUNTY HIGH SCHOOL', 'Here Katie makes friends for life...'));
   on(x0 + 350, () => say('WOODFORD COUNTY HIGH SCHOOL', '...and aces every single one of her exams. Obviously.'));
-  [390, 440, 490].forEach((d, i) => on(zx('woodford') + d, () => { floatText(zx('woodford') + d, 26, 'A*'); sparkle(zx('woodford') + d, 5, 12); sfx('coin', i); }));
+  on(zx('woodford') + 440, () => startMini('exam'));
   x0 = zx('flower');
   on(x0 + 30, () => say('NEEDHAMS', 'A brief but beautifully scented career at Needhams, the flower shop.'));
   x0 = zx('bristol');
@@ -357,13 +360,38 @@
   // when jumping in with ?x=, mark earlier triggers as done
   if (params.has('x')) { trig.forEach(t => { if (t.x < st.katie.x - 2) t.done = true; }); if (st.katie.x > ref.saleX + 6) ref.sale.spr = SIGN.sold; }
 
-  ITEMS.forEach(it => on(it.x - 4, () => collect(it.id)));
+  ITEMS.forEach(it => { if (it.id !== 'flower') on(it.x - 4, () => collect(it.id)); });
   trig.sort((a, b) => a.x - b.x);
   if (params.has('x')) { trig.forEach(t => { if (t.x < st.katie.x - 2) t.done = true; }); ITEMS.forEach(it => { if (it.x - 4 < st.katie.x - 2) { st.got[it.id] = -9; it.obj.hidden = true; } }); }
   function collect(id) {
     const it = itemBy[id]; st.got[id] = st.t; it.obj.hidden = true;
     sparkle(it.x, 8, 12); part({ x: it.x, h: 18, vh: 22, life: 1.2, spr: it.spr }); sfx('coin', 2);
   }
+  // ------------------------------------------------------------------ press-X spots along the path
+  const gates = [];
+  const gate = (x, prompt, fn) => gates.push({ x, prompt, fn, done: false });
+  [116, 220, 240].forEach((d, i) => gate(zx('flower', d), 'PRESS X TO PICK A FLOWER', (g) => {
+    st.picked++; floatText(g.x, 30, st.picked + '/3'); part({ x: g.x, h: 10, vh: 26, life: 1, spr: itemBy.flower.spr }); sfx('coin', st.picked);
+    if (st.picked === 3) { collect('flower'); say('NEEDHAMS', 'One perfect bouquet. She is a natural.'); }
+  }));
+  [352, 372, 392].forEach((d, i) => gate(zx('york', d), 'PRESS X TO PICK UP A BOX', (g) => {
+    ref.boxes[i].hidden = true; st.carry++; sfx('pop');
+    if (i === 0) bubble(st.clem, "I'd help, but... handlebars.", 3.5, 38);
+    if (i === 2) say('MOVING DAY', 'Three boxes at once. Careful...');
+  }));
+  gate(zx('york', 426), 'PRESS X TO CARRY THEM INSIDE', (g) => {
+    for (let i = 0; i < st.carry; i++) part({ x: g.x, h: 24 + i * 9, vx: 6, vh: -20, life: 0.8, spr: BOX });
+    st.carry = 0; hearts(g.x + 4, 6, 40); sparkle(g.x + 4, 10, 10); sfx('win'); say('HOME SWEET HOME', 'All moved in. Kettle on.');
+  });
+  const photos = [['usa', 250], ['sa', 260], ['sea', 250], ['india', 430]].map(a => ({ x: zx(a[0], a[1]), done: false }));
+  if (params.has('x')) { gates.forEach(g => { if (g.x < st.katie.x - 2) g.done = true; }); if (st.katie.x > zx('york', 350)) ref.boxes.forEach(b => { b.hidden = true; }); }
+  function nearGate() { const k = st.katie; return gates.find(g => !g.done && Math.abs(k.x - g.x) < 7); }
+  function nearPhoto() { const k = st.katie; return photos.find(q => !q.done && Math.abs(k.x - q.x) < 34); }
+  function pressX() {
+    const g = nearGate(); if (g) { g.done = true; g.fn(g); return; }
+    const q = nearPhoto(); if (q) { q.done = true; st.flash = 1; st.snaps++; floatText(st.katie.x, 36, 'SNAP!', '#ffffff'); part({ x: st.katie.x + 10, h: 26, vh: 14, life: 1.6, spr: PHOTO }); sfx('coin', 4); if (st.snaps === 4) say('INDIA', 'Four countries, four perfect photos. One for the album.'); }
+  }
+
   // ------------------------------------------------------------------ button-mashing moments
   const GRADES = ['E', 'D', 'C', 'B', 'A', 'A*'];
   const MINI = {
@@ -387,15 +415,25 @@
       press: (m) => { st.katie.walk += 9; },
       done: () => { st.katie.x = zx('marathon', 549); },
     },
+    exam: {
+      label: 'PRESS X WHEN THE PEN IS IN THE GREEN!', auto: 0, read: (p) => 'EXAMS ACED: ' + Math.round(p * 3) + '/3',
+      hit: (m) => {
+        const pos = 0.5 + 0.5 * Math.sin(m.t * 3.4), zone = Math.min(0.9, 0.3 + m.miss * 0.1 + m.t * 0.01);
+        if (Math.abs(pos - 0.5) <= zone / 2) { const d = [390, 440, 490][Math.round(m.p * 3)], x = zx('woodford') + d; m.p = Math.min(1, m.p + 1 / 3 + 0.001); floatText(x, 26, 'A*'); sparkle(x, 6, 12); sfx('coin', Math.round(m.p * 3)); }
+        else { m.miss++; floatText(st.katie.x, 30, 'NEARLY!', '#ffffff'); sfx('pop'); }
+      },
+      done: () => { sfx('win'); say('WOODFORD COUNTY HIGH SCHOOL', 'Three exams, three top grades. Easy.'); },
+    },
     ido: {
       label: "PRESS X TO SAY 'I DO!'", step: 1, auto: 0, read: () => '',
       press: () => { }, done: () => beginEnd(),
     },
   };
-  function startMini(id) { st.mode = 'mini'; st.mini = { id, p: 0, t: 0, kick: 0, x0: st.katie.x }; st.katie.moving = false; sfx('pop'); }
+  function startMini(id) { st.mode = 'mini'; st.mini = { id, p: 0, t: 0, kick: 0, miss: 0, x0: st.katie.x }; st.katie.moving = false; sfx('pop'); }
   function miniPress() {
     const m = st.mini, d = MINI[m.id]; if (!m || m.p >= 1) return;
-    m.p = Math.min(1, m.p + d.step); m.kick = 1; d.press(m); sfx('coin', Math.floor(m.p * 5));
+    m.kick = 1; if (d.hit) { d.hit(m); return; }
+    m.p = Math.min(1, m.p + d.step); d.press(m); sfx('coin', Math.floor(m.p * 5));
   }
   function beginEnd() {
     const k = st.katie;
@@ -486,7 +524,7 @@
     keys[e.key.length === 1 ? e.key.toLowerCase() : e.key] = true;
     audioStart();
     if (st.mode === 'title' && ['ArrowRight', 'd', 'Enter', ' '].includes(e.key.length === 1 ? e.key.toLowerCase() : e.key)) { st.mode = 'play'; st.hint = 0; }
-    if (st.mode === 'mini' && !e.repeat && (e.key.toLowerCase() === 'x' || e.key === ' ')) miniPress();
+    if (!e.repeat && (e.key.toLowerCase() === 'x' || e.key === ' ')) { if (st.mode === 'mini') miniPress(); else if (st.mode === 'play') pressX(); }
     if (e.key.toLowerCase() === 'm') { AU.muted = !AU.muted; if (AU.master) AU.master.gain.value = AU.muted ? 0 : 1; }
     if (e.key.toLowerCase() === 'r' && st.mode === 'end' && st.endT > 4) location.reload();
   });
@@ -525,6 +563,7 @@
       k.moving = dir !== 0;
       if (dir) { k.x += dir * sp * dt; k.face = dir; k.walk += sp * dt; st.hint += dt; }
       k.x = Math.max(40, Math.min(END_X, k.x));
+      for (const g of gates) if (!g.done && k.x > g.x) { k.x = g.x; k.moving = false; }
       const f = formAt(k.x);
       if (f !== k.form) { k.form = f; sparkle(k.x, 12, 2); sfx('coin', 1); }
       for (const t of trig) if (!t.done && k.x >= t.x) { t.done = true; t.fn(); }
@@ -548,7 +587,7 @@
       if (Math.random() < dt * 14) confetti(k.x + 10, 2, 300, ['#ff8fb3', '#ffffff', '#ffd93d', '#ffc2d1', '#b28dff']);
     }
     st.cam += (k.x - st.cam) * Math.min(1, dt * 10);
-    st.cap.t += dt;
+    st.cap.t += dt; st.flash = Math.max(0, st.flash - dt * 2.5);
 
     // Clem
     const c = st.clem;
@@ -720,6 +759,7 @@
       else if (k.moving) { f = (k.walk / (k.form === 'run' ? 9 : 6) | 0) % 2 + 1; lift = f === 2 ? 1 : 0; }
       if (st.mini && (st.mini.id === 'party' || st.mini.id === 'study')) lift += Math.round(st.mini.kick * (st.mini.id === 'party' ? 6 : 2));
       drawW(fs[f], k.x, lift);
+      for (let i = 0; i < st.carry; i++) drawW(BOX, k.x + 2 * k.face + Math.round(Math.sin(t * 5 + i) * (k.moving ? i : 0)), fs[f].height + lift + i * 9 - 1);
     }
     drawObjs(2);
     // particles
@@ -761,16 +801,28 @@
       if (g0 !== undefined) { const pop = Math.max(0, 1 - (st.t - g0) * 3); ctx.drawImage(it.spr, x + 1, y + 1 - Math.round(pop * 4)); }
     });
     if (st.mode === 'mini') {
-      const m = st.mini, d = MINI[m.id], bw = 190, bx = Math.round(CX - bw / 2) + 14, by = 176;
+      const m = st.mini, d = MINI[m.id], bw = 216, bx = Math.round(CX - bw / 2) + 14, by = 176;
       box(bx, by, bw, 32, 'rgba(22,24,48,.92)', '#ffd23f');
       textC(d.label, bx + bw / 2, by + 5, Math.sin(t * 9) > 0 ? '#ffffff' : '#ffd23f');
-      if (m.id !== 'ido') {
+      if (m.id === 'exam') {
+        box(bx + 8, by + 17, bw - 16, 9, '#0d0e1c', '#f4f1e8');
+        const zone = Math.min(0.9, 0.3 + m.miss * 0.1 + m.t * 0.01), iw = bw - 20, pos = 0.5 + 0.5 * Math.sin(m.t * 3.4);
+        fr(bx + 10 + Math.round(iw * (0.5 - zone / 2)), by + 19, Math.round(iw * zone), 5, '#3fbf5f');
+        fr(bx + 10 + Math.round((iw - 3) * pos), by + 16, 3, 11, '#ffffff'); fr(bx + 11 + Math.round((iw - 3) * pos), by + 17, 1, 9, '#2e6fb5');
+        const rd = d.read(m.p), rw = textWidth(rd, 2);
+        drawText(ctx, rd, Math.round(CX - rw / 2) + 2, 94, 'rgba(0,0,0,.5)', 2); drawText(ctx, rd, Math.round(CX - rw / 2), 92, '#ffffff', 2);
+      } else if (m.id !== 'ido') {
         box(bx + 8, by + 17, bw - 16, 9, '#0d0e1c', '#f4f1e8');
         const fw = Math.round((bw - 20) * m.p); fr(bx + 10, by + 19, fw, 5, m.p > 0.8 ? '#8cff7a' : m.p > 0.4 ? '#ffd23f' : '#ff8f5a'); fr(bx + 10, by + 19, fw, 1, 'rgba(255,255,255,.5)');
         const rd = d.read(m.p), rw = textWidth(rd, 2), ry = 92 - Math.round(m.kick * 3);
         drawText(ctx, rd, Math.round(CX - rw / 2) + 2, ry + 2, 'rgba(0,0,0,.5)', 2); drawText(ctx, rd, Math.round(CX - rw / 2), ry, '#ffffff', 2);
       } else textC('(or Space)', bx + bw / 2, by + 18, '#d6dcff');
     }
+    if (st.mode === 'play') {
+      const g = nearGate(), q = g ? null : nearPhoto(), pr = g ? g.prompt : (q ? 'PRESS X TO TAKE A PHOTO' : '');
+      if (pr) { const bw = textWidth(pr) + 16, bx = Math.round(CX - bw / 2) + 14; box(bx, 182, bw, 17, 'rgba(22,24,48,.92)', '#ffd23f'); textC(pr, bx + bw / 2, 187, Math.sin(t * 9) > 0 ? '#ffffff' : '#ffd23f'); }
+    }
+    if (st.flash > 0) fr(0, 0, W, H, 'rgba(255,255,255,' + (st.flash * 0.8).toFixed(3) + ')');
     if (st.mode === 'title') drawTitle();
     if (st.mode === 'end') drawEnd();
   }
@@ -801,7 +853,7 @@
     ctx.drawImage(S.heart, CX - 3, 70 + Math.round(Math.sin(t * 3) * 2));
     textC('The story so far', CX, 84, '#ffe9a6');
     if (Math.sin(t * 4) > -0.3) { const s2 = 'PRESS > TO START'; textS(s2, Math.round(CX - textWidth(s2) / 2), 104, '#ffffff'); }
-    { const h1 = 'Hold > to walk.  Mash X when asked.  M: music'; textS(h1, Math.round(CX - textWidth(h1) / 2), 202, '#d6dcff'); }
+    { const h1 = 'Hold > to walk.  Press X when asked.  M: music'; textS(h1, Math.round(CX - textWidth(h1) / 2), 202, '#d6dcff'); }
   }
   function drawEnd() {
     const e = st.endT;
