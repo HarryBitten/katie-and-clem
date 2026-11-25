@@ -4,12 +4,17 @@
   const cv = document.getElementById('game'), ctx = cv.getContext('2d');
   let K = 3;
   function resize() {
-    const sc = Math.max(1, Math.floor(Math.min(innerWidth / W, innerHeight / H)));
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
-    K = sc * dpr;
+    // whole-number scaling on big screens, fit-to-screen on small ones (phones)
+    const fit = Math.min(innerWidth / W, innerHeight / H);
+    const sc = fit >= 2 ? Math.floor(fit) : fit;
+    const dpr = Math.min(3, window.devicePixelRatio || 1);
+    K = Math.max(1, Math.round(sc * dpr));
     cv.width = W * K; cv.height = H * K;
-    cv.style.width = W * sc + 'px'; cv.style.height = H * sc + 'px';
+    cv.style.width = Math.floor(W * sc) + 'px'; cv.style.height = Math.floor(H * sc) + 'px';
   }
+  let touch = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
+  // wording for touch screens
+  const T = (s) => !touch ? s : s.replace('MASH X TO', 'TAP FAST TO').replace('PRESS X WHEN', 'TAP WHEN').replace('PRESS X TO', 'TAP TO');
   addEventListener('resize', resize); resize();
   const params = new URLSearchParams(location.search);
   const DEBUG = params.has('debug');
@@ -530,7 +535,23 @@
   });
   addEventListener('keyup', (e) => { keys[e.key.length === 1 ? e.key.toLowerCase() : e.key] = false; });
   addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
-  cv.addEventListener('mousedown', () => { audioStart(); if (st.mode === 'title') st.mode = 'play'; });
+  // touch and mouse: hold anywhere to walk, tap for the action button
+  let pointers = 0;
+  addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'touch') touch = true;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    e.preventDefault(); audioStart(); pointers++;
+    if (st.mode === 'title') { st.mode = 'play'; st.hint = 0; }
+    else if (st.mode === 'mini') miniPress();
+    else if (st.mode === 'play') pressX();
+    else if (st.mode === 'end' && st.endT > 9) location.reload();
+    keys.ArrowRight = true;
+  }, { passive: false });
+  const release = () => { audioStart(); pointers = Math.max(0, pointers - 1); if (!pointers) keys.ArrowRight = false; };
+  addEventListener('pointerup', release); addEventListener('pointercancel', release);
+  addEventListener('contextmenu', (e) => e.preventDefault());
+  addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+  document.addEventListener('visibilitychange', () => { pointers = 0; keys.ArrowRight = false; });
 
   // ------------------------------------------------------------------ update
   function formAt(x) {
@@ -794,7 +815,7 @@
       let n = Math.floor(cp.t * 48);
       lines.forEach((ln, i) => { const s2 = ln.slice(0, Math.max(0, n)); n -= ln.length + 1; if (s2) drawText(ctx, s2, 13, 21 + i * 10, '#ffffff'); });
     }
-    if (st.mode === 'play' && st.hint < 2.5 && st.katie.x < 300 && Math.sin(t * 5) > -0.4) textS('HOLD > OR D TO WALK', 136, 200, '#ffffff');
+    if (st.mode === 'play' && st.hint < 2.5 && st.katie.x < 300 && Math.sin(t * 5) > -0.4) { const hh = touch ? 'HOLD THE SCREEN TO WALK' : 'HOLD > OR D TO WALK'; textS(hh, Math.round(CX - textWidth(hh) / 2), 200, '#ffffff'); }
     if (st.mode !== 'title') ITEMS.forEach((it, i) => {
       const x = 6 + i * 13, y = H - 16, g0 = st.got[it.id];
       box(x, y, 11, 11, 'rgba(10,10,30,.45)', 'rgba(255,255,255,.35)');
@@ -803,7 +824,7 @@
     if (st.mode === 'mini') {
       const m = st.mini, d = MINI[m.id], bw = 216, bx = Math.round(CX - bw / 2) + 14, by = 176;
       box(bx, by, bw, 32, 'rgba(22,24,48,.92)', '#ffd23f');
-      textC(d.label, bx + bw / 2, by + 5, Math.sin(t * 9) > 0 ? '#ffffff' : '#ffd23f');
+      textC(T(d.label), bx + bw / 2, by + 5, Math.sin(t * 9) > 0 ? '#ffffff' : '#ffd23f');
       if (m.id === 'exam') {
         box(bx + 8, by + 17, bw - 16, 9, '#0d0e1c', '#f4f1e8');
         const zone = Math.min(0.9, 0.3 + m.miss * 0.1 + m.t * 0.01), iw = bw - 20, pos = 0.5 + 0.5 * Math.sin(m.t * 3.4);
@@ -816,10 +837,10 @@
         const fw = Math.round((bw - 20) * m.p); fr(bx + 10, by + 19, fw, 5, m.p > 0.8 ? '#8cff7a' : m.p > 0.4 ? '#ffd23f' : '#ff8f5a'); fr(bx + 10, by + 19, fw, 1, 'rgba(255,255,255,.5)');
         const rd = d.read(m.p), rw = textWidth(rd, 2), ry = 92 - Math.round(m.kick * 3);
         drawText(ctx, rd, Math.round(CX - rw / 2) + 2, ry + 2, 'rgba(0,0,0,.5)', 2); drawText(ctx, rd, Math.round(CX - rw / 2), ry, '#ffffff', 2);
-      } else textC('(or Space)', bx + bw / 2, by + 18, '#d6dcff');
+      } else if (!touch) textC('(or Space)', bx + bw / 2, by + 18, '#d6dcff');
     }
     if (st.mode === 'play') {
-      const g = nearGate(), q = g ? null : nearPhoto(), pr = g ? g.prompt : (q ? 'PRESS X TO TAKE A PHOTO' : '');
+      const g = nearGate(), q = g ? null : nearPhoto(), pr = T(g ? g.prompt : (q ? 'PRESS X TO TAKE A PHOTO' : ''));
       if (pr) { const bw = textWidth(pr) + 16, bx = Math.round(CX - bw / 2) + 14; box(bx, 182, bw, 17, 'rgba(22,24,48,.92)', '#ffd23f'); textC(pr, bx + bw / 2, 187, Math.sin(t * 9) > 0 ? '#ffffff' : '#ffd23f'); }
     }
     if (st.flash > 0) fr(0, 0, W, H, 'rgba(255,255,255,' + (st.flash * 0.8).toFixed(3) + ')');
@@ -852,8 +873,8 @@
     drawText(ctx, '&', x1 + textWidth('KATIE ', 4) + 4, 34, '#ff6b9d', 4);
     ctx.drawImage(S.heart, CX - 3, 70 + Math.round(Math.sin(t * 3) * 2));
     textC('The story so far', CX, 84, '#ffe9a6');
-    if (Math.sin(t * 4) > -0.3) { const s2 = 'PRESS > TO START'; textS(s2, Math.round(CX - textWidth(s2) / 2), 104, '#ffffff'); }
-    { const h1 = 'Hold > to walk.  Press X when asked.  M: music'; textS(h1, Math.round(CX - textWidth(h1) / 2), 202, '#d6dcff'); }
+    if (Math.sin(t * 4) > -0.3) { const s2 = touch ? 'TAP TO START' : 'PRESS > TO START'; textS(s2, Math.round(CX - textWidth(s2) / 2), 104, '#ffffff'); }
+    { const h1 = touch ? 'Hold the screen to walk.  Tap when asked.' : 'Hold > to walk.  Press X when asked.  M: music'; textS(h1, Math.round(CX - textWidth(h1) / 2), 202, '#d6dcff'); }
   }
   function drawEnd() {
     const e = st.endT;
@@ -872,7 +893,7 @@
         if (n - used > ln.length + 2) { ctx.save(); ctx.translate(lx + textWidth(ln, 2) + 6, 88 + Math.round(Math.sin(st.t * 4))); ctx.scale(2, 2); ctx.drawImage(S.heart, 0, 0); ctx.restore(); }
       }
       ctx.drawImage(S.heart, x + 8, y + 8); ctx.drawImage(S.heart, x + w - 15, y + 8);
-      if (e > 8 && Math.sin(st.t * 3) > -0.5) { const s3 = 'THE END  -  press R to play again'; textS(s3, Math.round(CX - textWidth(s3) / 2), 203, '#ffffff'); }
+      if (e > 8 && Math.sin(st.t * 3) > -0.5) { const s3 = touch ? 'THE END  -  tap to play again' : 'THE END  -  press R to play again'; textS(s3, Math.round(CX - textWidth(s3) / 2), 203, '#ffffff'); }
     }
   }
 
